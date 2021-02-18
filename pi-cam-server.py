@@ -97,7 +97,7 @@ def count():
     return str(len(listFiles()))
 
 @app.get('/v')
-def version():
+def ver():
     return version
 
 def listFiles():

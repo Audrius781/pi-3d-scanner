@@ -52,8 +52,7 @@ def reboot():
 
 @app.get('/update')
 def update():
-    os.system("curl https://raw.githubusercontent.com/Audrius781/pi-3d-scanner/master/pi-cam-server.py -o /home/pi/cam-server.py")
-    os.system("sudo service cam restart")
+    os.system("sudo /home/pi/updatescript &")
     return "updated"
 
 @app.get('/startshooting')

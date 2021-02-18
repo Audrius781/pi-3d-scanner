@@ -5,7 +5,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="2"
+version="1"
 
 host=socket.gethostname()
 

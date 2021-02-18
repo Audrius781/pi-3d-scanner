@@ -5,6 +5,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading
 from cheroot.wsgi import Server as CherryPyWSGIServer
+version="1"
 
 host=socket.gethostname()
 
@@ -49,6 +50,12 @@ def reboot():
     os.system("sudo reboot")
     return "reboot"
 
+@app.get('/update')
+def update():
+    os.system("curl https://raw.githubusercontent.com/Audrius781/pi-3d-scanner/master/pi-cam-server.py -o /home/pi/cam-server.py")
+    os.system("sudo service cam restart")
+    return "updated"
+
 @app.get('/startshooting')
 def startshooting():
     global event
@@ -88,6 +95,10 @@ def deleteall():
 @app.get('/count')
 def count():
     return str(len(listFiles()))
+
+@app.get('/v')
+def version():
+    return version
 
 def listFiles():
     return   [f for f in listdir(folder) if isfile(join(folder, f))]

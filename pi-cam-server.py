@@ -1,11 +1,9 @@
 from bottle import run, static_file, route, Bottle
-from os import listdir
-from os.path import isfile, join, exists
 from datetime import datetime
 from sys import platform
-import os, socket, threading
+import os, socket, threading, glob
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.1"
+version="1.2"
 
 host=socket.gethostname()
 
@@ -30,7 +28,7 @@ def ping():
 
 @app.get('/getone')
 def getone():
-    file=listFiles()[0]
+    file=os.path.basename(listFiles()[0])
     return file
 
 @app.get('/takephoto')
@@ -81,7 +79,7 @@ def download(file):
 
 @app.get('/delete/<file>')
 def delete(file):
-    if exists(folder+file):
+    if os.path.exists(folder+file):
         os.remove(folder+file)
         return ("deleted "+file)
     else:
@@ -100,7 +98,7 @@ def ver():
     return version
 
 def listFiles():
-    return   [f for f in listdir(folder) if isfile(join(folder, f))]
+    return  glob.glob(folder+'*.jpg')
 
 server = CherryPyWSGIServer(
     ('0.0.0.0', 80),app,

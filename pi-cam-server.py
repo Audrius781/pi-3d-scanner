@@ -52,7 +52,7 @@ def reboot():
 
 @app.get('/update')
 def update():
-    os.system("sudo /home/pi/updatescript &")
+    os.system("sudo /home/pi/autoupdate &")
     return "updated"
 
 @app.get('/startshooting')

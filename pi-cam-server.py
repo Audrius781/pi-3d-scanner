@@ -28,7 +28,10 @@ def ping():
 
 @app.get('/getone')
 def getone():
-    file=os.path.basename(listFiles()[0])
+    try:
+        file=os.path.basename(listFiles()[0])
+    except:
+        file="none"
     return file
 
 @app.get('/takephoto')

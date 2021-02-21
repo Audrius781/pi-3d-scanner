@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.2"
+version="1.3"
 
 host=socket.gethostname()
 

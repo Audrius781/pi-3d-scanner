@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.6"
+version="1.7"
 
 host=socket.gethostname()
 
@@ -146,7 +146,7 @@ def setrotate(rotate):
         config['rotate']=True
     else:
          config['rotate']=False
-    savrconfig()
+    saveconfig()
     return str(config)
 
 def listFiles():

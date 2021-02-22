@@ -3,14 +3,21 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.4"
+version="1.5"
 
 host=socket.gethostname()
 
 if platform=="win32":
     folder='C:\\Users\\remote\\Desktop\\test\\'
+    testfolder='C:\\Users\\remote\\Desktop\\'
 else:
     folder='/home/pi/photos/'
+    testfolder='/home/pi/'
+
+os.system("raspistill -o "+testfolder+"test.jpg")
+cameraStatus="Error"
+if os.path.exists(testfolder+"test.jpg"):
+    cameraStatus="Ready"
 
 event=threading.Event()
 
@@ -22,9 +29,9 @@ def takeManyPhotos():
 
 x = threading.Thread(target=takeManyPhotos, args=())
 app=Bottle()
-@app.get('/ping')
+@app.get('/status')
 def ping():
-    return "pong"
+    return cameraStatus
 
 @app.get('/getone')
 def getone():

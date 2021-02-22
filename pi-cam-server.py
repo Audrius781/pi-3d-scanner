@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.3"
+version="1.4"
 
 host=socket.gethostname()
 
@@ -38,7 +38,7 @@ def getone():
 def takephoto():
     file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".jpg"
     os.system("raspistill -o "+folder+file)
-    html='<html><body><img src="http://'+host+"/download/"+file+'" alt=""></body></html>'
+    html='<html><body><img src="http://'+host+"/download/"+file+'" style="max-width: 100%;max-height: 100%;" alt=""></body></html>'
     return html
 
 @app.get('/halt')

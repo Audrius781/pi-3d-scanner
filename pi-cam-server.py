@@ -1,30 +1,57 @@
 from bottle import run, static_file, route, Bottle
 from datetime import datetime
 from sys import platform
-import os, socket, threading, glob
+import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.5"
+version="1.6"
 
 host=socket.gethostname()
 
+
+# Folderiai
 if platform=="win32":
     folder='C:\\Users\\remote\\Desktop\\test\\'
-    testfolder='C:\\Users\\remote\\Desktop\\'
+    homefolder='C:\\Users\\remote\\Desktop\\'
 else:
     folder='/home/pi/photos/'
-    testfolder='/home/pi/'
+    homefolder='/home/pi/'
 
-os.system("raspistill -o "+testfolder+"test.jpg")
+# Bandomuoji nuotrauka patikrinti ar veikia kamera
+os.system("rm "+homefolder+"test.jpg")
+os.system("raspistill -o "+homefolder+"test.jpg")
 cameraStatus="Error"
-if os.path.exists(testfolder+"test.jpg"):
+if os.path.exists(homefolder+"test.jpg"):
     cameraStatus="Ready"
 
+# Konfiguracija is failo arba sukurti nauja faila
+
+def saveconfig():
+    global config
+    with open(homefolder+"config.json", 'w') as f:
+         json.dump(config, f)
+
+if os.path.exists(homefolder+"config.json"):
+  with open(homefolder+"config.json") as f:
+    config = json.load(f)
+else:
+    config= {'rotate': False}
+    saveconfig()
+    
+
+# Signalas sustabdyti fotografavima
 event=threading.Event()
+
+def takePhoto(path):
+    params=""
+    if config["rotate"]:
+        params=params+"-vf -hf "
+    os.system("raspistill "+params+" -o "+path)
+
 
 def takeManyPhotos():
     while not event.is_set():
         file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".jpg"
-        os.system("raspistill -o "+folder+file)
+        takePhoto(folder+file)
         print (file)
 
 x = threading.Thread(target=takeManyPhotos, args=())
@@ -44,7 +71,7 @@ def getone():
 @app.get('/takephoto')
 def takephoto():
     file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".jpg"
-    os.system("raspistill -o "+folder+file)
+    takePhoto(folder+file)
     html='<html><body><img src="http://'+host+"/download/"+file+'" style="max-width: 100%;max-height: 100%;" alt=""></body></html>'
     return html
 
@@ -107,12 +134,27 @@ def count():
 def ver():
     return version
 
+@app.get('/config')
+def conf():
+    global config
+    return str(config)
+
+@app.get('/setrotate/<rotate>')
+def setrotate(rotate):
+    global config
+    if rotate=='true':
+        config['rotate']=True
+    else:
+         config['rotate']=False
+    savrconfig()
+    return str(config)
+
 def listFiles():
     return  glob.glob(folder+'*.jpg')
 
 server = CherryPyWSGIServer(
     ('0.0.0.0', 80),app,
     server_name='My_App',
-    numthreads=30)
+    numthreads=10)
 
 server.start()

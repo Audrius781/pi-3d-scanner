@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.8"
+version="1.1"
 
 host=socket.gethostname()
 
@@ -128,7 +128,7 @@ def deleteall():
 
 @app.get('/sethostname/<host>')
 def sethostname(host):
-    os.system("sudo hostname "+host)
+    os.system("sudo raspi-config nonint do_hostname "+host)
 
 @app.get('/count')
 def count():

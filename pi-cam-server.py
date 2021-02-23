@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.7"
+version="1.8"
 
 host=socket.gethostname()
 
@@ -125,6 +125,10 @@ def delete(file):
 @app.get('/deleteall')
 def deleteall():
     os.system("rm /home/pi/photos/*")
+
+@app.get('/sethostname/<host>')
+def sethostname(host):
+    os.system("sudo hostname "+host)
 
 @app.get('/count')
 def count():

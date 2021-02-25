@@ -3,10 +3,10 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.1"
+version="1.2"
 
 host=socket.gethostname()
-
+status="stopped"
 
 # Folderiai
 if platform=="win32":
@@ -41,21 +41,24 @@ else:
 # Signalas sustabdyti fotografavima
 event=threading.Event()
 
+# Padaryti viena nuotrauka ir irasyti i SD kortele
 def takePhoto(path):
     params=""
     if config["rotate"]:
         params=params+"-vf -hf "
     os.system("raspistill "+params+" -o "+path)
 
-
+# Daryti daug nuotrauku iki kol negautas signalas sustabdyti
 def takeManyPhotos():
     while not event.is_set():
         file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".jpg"
         takePhoto(folder+file)
         print (file)
-
+    global status
+    status="stopped"
 x = threading.Thread(target=takeManyPhotos, args=())
 app=Bottle()
+
 @app.get('/status')
 def ping():
     return cameraStatus
@@ -103,6 +106,8 @@ def startshooting():
             x = threading.Thread(target=takeManyPhotos, args=()) #create new instance if thread is dead
             x.start() #start thread
             print ("new thread")
+    global status
+    status="started"
     return "started"
 
 @app.get('/stopshooting')
@@ -129,6 +134,7 @@ def deleteall():
 @app.get('/sethostname/<host>')
 def sethostname(host):
     os.system("sudo raspi-config nonint do_hostname "+host)
+    return "Naujas pavadinimas: "+host
 
 @app.get('/count')
 def count():
@@ -142,6 +148,10 @@ def ver():
 def conf():
     global config
     return str(config)
+
+@app.get('/getshootingstatus')
+def getshootingstatus():
+    return status
 
 @app.get('/setrotate/<rotate>')
 def setrotate(rotate):

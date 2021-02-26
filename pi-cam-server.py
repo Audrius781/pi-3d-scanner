@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.2"
+version="1.3"
 
 host=socket.gethostname()
 status="stopped"
@@ -70,6 +70,12 @@ def getone():
     except:
         file="none"
     return file
+
+@app.get('/preview')
+def preview():
+    os.system("rm "+homefolder+"test.jpg")
+    os.system("raspistill -o "+homefolder+"test.jpg")
+    return static_file("test.jpg", root=homefolder, download="test.jpg")
 
 @app.get('/takephoto')
 def takephoto():

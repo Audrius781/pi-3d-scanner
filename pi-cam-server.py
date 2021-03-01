@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.1"
+version="1.2"
 
 host=socket.gethostname()
 status="stopped"
@@ -18,7 +18,7 @@ else:
 
 # Bandomuoji nuotrauka patikrinti ar veikia kamera
 os.system("rm "+homefolder+"test.jpg")
-os.system("raspistill -o "+homefolder+"test.jpg")
+os.system("raspistill -o "+homefolder+"test.jpg &")
 cameraStatus="Error"
 if os.path.exists(homefolder+"test.jpg"):
     cameraStatus="Ready"
@@ -174,7 +174,7 @@ def listFiles():
 
 server = CherryPyWSGIServer(
     ('0.0.0.0', 80),app,
-    server_name='My_App',
+    server_name='pi-cam',
     numthreads=10)
 
 server.start()

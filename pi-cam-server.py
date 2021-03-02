@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.2"
+version="1.3"
 
 host=socket.gethostname()
 status="stopped"
@@ -20,8 +20,6 @@ else:
 os.system("rm "+homefolder+"test.jpg")
 os.system("raspistill -o "+homefolder+"test.jpg &")
 cameraStatus="Error"
-if os.path.exists(homefolder+"test.jpg"):
-    cameraStatus="Ready"
 
 # Konfiguracija is failo arba sukurti nauja faila
 
@@ -41,6 +39,8 @@ else:
 # Signalas sustabdyti fotografavima
 event=threading.Event()
 
+# Pagrindines fotografavimo funkcijos
+
 # Padaryti viena nuotrauka ir irasyti i SD kortele
 def takePhoto(path):
     params=""
@@ -59,23 +59,15 @@ def takeManyPhotos():
 x = threading.Thread(target=takeManyPhotos, args=())
 app=Bottle()
 
-@app.get('/status')
-def ping():
-    return cameraStatus
+# WEB SERVER FUNKCIJOS -----------------------------------------------------------
 
-@app.get('/getone')
-def getone():
-    try:
-        file=os.path.basename(listFiles()[0])
-    except:
-        file="none"
-    return file
+# Fotografavimas
 
 @app.get('/preview')
 def preview():
-    os.system("rm "+homefolder+"test.jpg")
-    takePhoto(homefolder+"test.jpg")
-    return static_file("test.jpg", root=homefolder, download="test.jpg")
+    os.system("rm "+homefolder+"preview.jpg")
+    takePhoto(homefolder+"preview.jpg")
+    return static_file("preview.jpg", root=homefolder, download="preview.jpg")
 
 @app.get('/takephoto')
 def takephoto():
@@ -83,21 +75,6 @@ def takephoto():
     takePhoto(folder+file)
     html='<html><body><img src="http://'+host+"/download/"+file+'" style="max-width: 100%;max-height: 100%;" alt=""></body></html>'
     return html
-
-@app.get('/halt')
-def halt():
-    os.system("sudo halt")
-    return "halt"
-
-@app.get('/reboot')
-def reboot():
-    os.system("sudo reboot")
-    return "reboot"
-
-@app.get('/update')
-def update():
-    os.system("sudo /home/pi/autoupdate &")
-    return "updated"
 
 @app.get('/startshooting')
 def startshooting():
@@ -121,6 +98,16 @@ def stopshooting():
     event.set()
     return "stopped"
 
+# Failu siuntimas ir trynimas
+
+@app.get('/getone')
+def getone():
+    try:
+        file=os.path.basename(listFiles()[0])
+    except:
+        file="none"
+    return file
+
 @app.get('/download/<file>')
 def download(file):
     return static_file(file, root=folder, download=file)
@@ -137,10 +124,7 @@ def delete(file):
 def deleteall():
     os.system("rm /home/pi/photos/*")
 
-@app.get('/sethostname/<host>')
-def sethostname(host):
-    os.system("sudo raspi-config nonint do_hostname "+host)
-    return "Naujas pavadinimas: "+host
+# Busena
 
 @app.get('/count')
 def count():
@@ -155,9 +139,38 @@ def conf():
     global config
     return str(config)
 
+@app.get('/status')
+def ping():
+    global cameraStatus
+    if os.path.exists(homefolder+"test.jpg"):
+        cameraStatus="Ready"
+    return cameraStatus
+
 @app.get('/getshootingstatus')
 def getshootingstatus():
     return status
+
+# Rasperry pi kontrole ir konfiguracija
+
+@app.get('/halt')
+def halt():
+    os.system("sudo halt")
+    return "halt"
+
+@app.get('/reboot')
+def reboot():
+    os.system("sudo reboot")
+    return "reboot"
+
+@app.get('/update')
+def update():
+    os.system("sudo /home/pi/autoupdate &")
+    return "updated"
+
+@app.get('/sethostname/<host>')
+def sethostname(host):
+    os.system("sudo raspi-config nonint do_hostname "+host)
+    return "Naujas pavadinimas: "+host
 
 @app.get('/setrotate/<rotate>')
 def setrotate(rotate):

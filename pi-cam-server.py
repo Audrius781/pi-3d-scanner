@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.3"
+version="1.4"
 
 host=socket.gethostname()
 status="stopped"
@@ -20,6 +20,11 @@ else:
 os.system("rm "+homefolder+"test.jpg")
 os.system("raspistill -o "+homefolder+"test.jpg &")
 cameraStatus="Error"
+
+# Gauti failu sarasa
+
+def listFiles():
+    return  glob.glob(folder+'*.jpg')
 
 # Konfiguracija is failo arba sukurti nauja faila
 
@@ -43,7 +48,7 @@ event=threading.Event()
 
 # Padaryti viena nuotrauka ir irasyti i SD kortele
 def takePhoto(path):
-    params=""
+    params="-t 1000 "
     if config["rotate"]:
         params=params+"-vf -hf "
     os.system("raspistill "+params+" -o "+path)
@@ -182,8 +187,9 @@ def setrotate(rotate):
     saveconfig()
     return str(config)
 
-def listFiles():
-    return  glob.glob(folder+'*.jpg')
+
+
+# Serverio paleidimas -----------
 
 server = CherryPyWSGIServer(
     ('0.0.0.0', 80),app,

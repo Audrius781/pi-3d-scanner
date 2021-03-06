@@ -38,7 +38,11 @@ if os.path.exists(homefolder+"config.json"):
     config = json.load(f)
 else:
     config= {'rotate': False}
-    saveconfig()
+
+if not ("parameters" in config.keys()):
+    config['parameters']="-t 1000"
+
+saveconfig()
     
 
 # Signalas sustabdyti fotografavima
@@ -48,10 +52,9 @@ event=threading.Event()
 
 # Padaryti viena nuotrauka ir irasyti i SD kortele
 def takePhoto(path):
-    params="-t 1000 "
     if config["rotate"]:
-        params=params+"-vf -hf "
-    os.system("raspistill "+params+" -o "+path)
+        params=params+" -vf -hf "
+    os.system("raspistill "+config["parameters"]+params+" -o "+path)
 
 # Daryti daug nuotrauku iki kol negautas signalas sustabdyti
 def takeManyPhotos():
@@ -187,6 +190,12 @@ def setrotate(rotate):
     saveconfig()
     return str(config)
 
+@app.get('/setparameters/<parameters>')
+def setparameters(parameters):
+    global config
+    config['parameters']=parameters
+    saveconfig()
+    return str(config)
 
 
 # Serverio paleidimas -----------

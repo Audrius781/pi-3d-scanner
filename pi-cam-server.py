@@ -52,6 +52,7 @@ event=threading.Event()
 
 # Padaryti viena nuotrauka ir irasyti i SD kortele
 def takePhoto(path):
+    params=""
     if config["rotate"]:
         params=params+" -vf -hf "
     os.system("raspistill "+config["parameters"]+params+" -o "+path)

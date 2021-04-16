@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.3v"
+version="1.4v"
 
 host=socket.gethostname()
 status="stopped"
@@ -18,7 +18,7 @@ else:
 
 # Bandomuoji nuotrauka patikrinti ar veikia kamera
 os.system("rm "+homefolder+"test.jpg")
-os.system("raspistill -o "+homefolder+"test.jpg &")
+os.system("raspistill -t1000 -o "+homefolder+"test.jpg &")
 cameraStatus="Error"
 
 # Gauti failu sarasa

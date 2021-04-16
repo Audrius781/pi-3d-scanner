@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.3"
+version="1.3v"
 
 host=socket.gethostname()
 status="stopped"
@@ -24,7 +24,11 @@ cameraStatus="Error"
 # Gauti failu sarasa
 
 def listFiles():
-    return  glob.glob(folder+'*.jpg')
+    types = ('*.pdf', '*.cpp') # the tuple of file types
+    files_grabbed = []
+    for files in types:
+         files_grabbed.extend(glob.glob(files))
+    return  files_grabbed
 
 # Konfiguracija is failo arba sukurti nauja faila
 
@@ -41,7 +45,8 @@ else:
 
 if not ("parameters" in config.keys()):
     config['parameters']="-t 1000"
-
+if not ("videoparameters" in config.keys()):
+    config['videoparameters']="-t 30000 -w 640 -h 480 -fps 25 -b 1200000 -p 0,0,640,480"
 saveconfig()
     
 
@@ -65,6 +70,11 @@ def takeManyPhotos():
 x = threading.Thread(target=takeManyPhotos, args=())
 app=Bottle()
 
+# Padaryti viena video i SD kortele
+def takeVideo(path):
+    os.system("raspistill "+config["videoparameters"]+" -o "+path)
+
+
 # WEB SERVER FUNKCIJOS -----------------------------------------------------------
 
 # Fotografavimas
@@ -79,6 +89,13 @@ def preview():
 def takephoto():
     file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".jpg"
     takePhoto(folder+file)
+    html='<html><body><img src="http://'+host+"/download/"+file+'" style="max-width: 100%;max-height: 100%;" alt=""></body></html>'
+    return html
+
+@app.get('/takevideo')
+def takevideo():
+    file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".h264"
+    takeVideo(folder+file)
     html='<html><body><img src="http://'+host+"/download/"+file+'" style="max-width: 100%;max-height: 100%;" alt=""></body></html>'
     return html
 

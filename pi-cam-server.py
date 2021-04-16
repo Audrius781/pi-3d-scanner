@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.4v"
+version="1.5v"
 
 host=socket.gethostname()
 status="stopped"
@@ -24,7 +24,7 @@ cameraStatus="Error"
 # Gauti failu sarasa
 
 def listFiles():
-    types = ('*.pdf', '*.cpp') # the tuple of file types
+    types = ('*.jpg', '*.h264','*.mp4') # the tuple of file types
     files_grabbed = []
     for files in types:
          files_grabbed.extend(glob.glob(files))

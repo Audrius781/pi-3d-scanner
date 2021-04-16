@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.5v"
+version="1.6v"
 
 host=socket.gethostname()
 status="stopped"
@@ -18,7 +18,7 @@ else:
 
 # Bandomuoji nuotrauka patikrinti ar veikia kamera
 os.system("rm "+homefolder+"test.jpg")
-os.system("raspistill -t1000 -o "+homefolder+"test.jpg &")
+os.system("raspistill -t 1000 -o "+homefolder+"test.jpg &")
 cameraStatus="Error"
 
 # Gauti failu sarasa
@@ -26,8 +26,8 @@ cameraStatus="Error"
 def listFiles():
     types = ('*.jpg', '*.h264','*.mp4') # the tuple of file types
     files_grabbed = []
-    for files in types:
-         files_grabbed.extend(glob.glob(files))
+    for filetype in types:
+         files_grabbed.extend(glob.glob(folder+filetype))
     return  files_grabbed
 
 # Konfiguracija is failo arba sukurti nauja faila

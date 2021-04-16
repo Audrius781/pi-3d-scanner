@@ -3,7 +3,7 @@ from datetime import datetime
 from sys import platform
 import os, socket, threading, glob, json
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.6v"
+version="1.4v"
 
 host=socket.gethostname()
 status="stopped"
@@ -72,7 +72,7 @@ app=Bottle()
 
 # Padaryti viena video i SD kortele
 def takeVideo(path):
-    os.system("raspistill "+config["videoparameters"]+" -o "+path)
+    os.system("raspivid "+config["videoparameters"]+" -o "+path)
 
 
 # WEB SERVER FUNKCIJOS -----------------------------------------------------------
@@ -209,6 +209,13 @@ def setrotate(rotate):
 def setparameters(parameters):
     global config
     config['parameters']=parameters
+    saveconfig()
+    return str(config)
+
+@app.get('/setvideoparameters/<parameters>')
+def setvideoparameters(parameters):
+    global config
+    config['videoparameters']=parameters
     saveconfig()
     return str(config)
 

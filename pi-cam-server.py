@@ -3,7 +3,7 @@ from datetime import datetime
 import os, socket, threading, glob, json, sys
 from cheroot.wsgi import Server as CherryPyWSGIServer
 
-version="1.5v"
+version="1.7v"
 
 host=socket.gethostname()
 status="stopped"
@@ -188,8 +188,10 @@ def reboot():
 @app.get('/update')
 def update():
     global version
+    oldversion=version
     version="updating..."
-    os.system("sudo apt-get -y gpac")
+    os.system("sudo apt-get -y install gpac")
+    version=oldversion
     os.system("sudo /home/pi/autoupdate &")
     return "updated"
 

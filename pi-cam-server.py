@@ -1,20 +1,41 @@
 from bottle import run, static_file, route, Bottle
 from datetime import datetime
-from sys import platform
-import os, socket, threading, glob, json
+import os, socket, threading, glob, json, sys
 from cheroot.wsgi import Server as CherryPyWSGIServer
-version="1.4v"
+try: 
+    import apt
+except: 
+    print ("No apt package")
+version="1.5v"
 
 host=socket.gethostname()
 status="stopped"
 
 # Folderiai
-if platform=="win32":
+if sys.platform=="win32": #windows - tik testavimui
     folder='C:\\Users\\remote\\Desktop\\test\\'
     homefolder='C:\\Users\\remote\\Desktop\\'
-else:
+else:  #Raspberry pi
     folder='/home/pi/photos/'
     homefolder='/home/pi/'
+    # Instaliuoti gpac kad veiktu M4Box
+    pkg_name = "gpac"
+    
+    cache = apt.cache.Cache()
+    cache.update()
+    cache.open()
+
+    pkg = cache[pkg_name]
+    if pkg.is_installed:
+        print ("{pkg_name} already installed".format(pkg_name=pkg_name))
+    else:
+        pkg.mark_install()
+
+        try:
+            cache.commit()
+        except (Exception, arg):
+            print >> sys.stderr, "Sorry, package installation failed [{err}]".format(err=str(arg))
+
 
 # Bandomuoji nuotrauka patikrinti ar veikia kamera
 os.system("rm "+homefolder+"test.jpg")

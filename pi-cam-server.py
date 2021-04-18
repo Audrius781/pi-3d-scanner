@@ -3,7 +3,7 @@ from datetime import datetime
 import os, socket, threading, glob, json, sys
 from cheroot.wsgi import Server as CherryPyWSGIServer
 
-version="1.4.3"
+version="1.4.4"
 
 host=socket.gethostname()
 status="stopped"
@@ -100,9 +100,9 @@ def takevideo():
         file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".mp4"
         status="started_video"
         takeVideo(homefolder+"video.h264")
+        status="stopped"
         os.system("MP4Box -add "+homefolder+"video.h264 "+homefolder+"video.mp4")
         os.system("mv "+homefolder+"video.mp4 "+folder+file)
-        status="stopped"
         rt="video_taken"
     return rt
 

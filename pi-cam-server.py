@@ -3,7 +3,7 @@ from datetime import datetime
 import os, socket, threading, glob, json, sys
 from cheroot.wsgi import Server as CherryPyWSGIServer
 
-version="1.4.1"
+version="1.4.2"
 
 host=socket.gethostname()
 status="stopped"
@@ -126,6 +126,11 @@ def startshooting():
 @app.get('/stopshooting')
 def stopshooting():
     event.set()
+    return "stopped"
+
+@app.get('/stopvideo')
+def stopshooting():
+    os.system("sudo pkill raspivid")
     return "stopped"
 
 # Failu siuntimas ir trynimas

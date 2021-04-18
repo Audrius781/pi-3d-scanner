@@ -3,7 +3,7 @@ from datetime import datetime
 import os, socket, threading, glob, json, sys
 from cheroot.wsgi import Server as CherryPyWSGIServer
 
-version="1.7v"
+version="1.4.1"
 
 host=socket.gethostname()
 status="stopped"
@@ -94,10 +94,17 @@ def takephoto():
 
 @app.get('/takevideo')
 def takevideo():
-    file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".h264"
-    takeVideo(folder+file)
-    html='<html><body><img src="http://'+host+"/download/"+file+'" style="max-width: 100%;max-height: 100%;" alt=""></body></html>'
-    return html
+    global status
+    rt="camera_busy"
+    if status=="stopped":
+        file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".mp4"
+        status="started_video"
+        takeVideo(homefolder+"video.h264")
+        os.system("MP4Box -add "+homefolder+"video.h264 "+homefolder+"video.mp4")
+        os.system("mv "+homefolder+"video.mp4 "+folder+file)
+        status="stopped"
+        rt="video_taken"
+    return rt
 
 @app.get('/startshooting')
 def startshooting():
@@ -187,11 +194,16 @@ def reboot():
 
 @app.get('/update')
 def update():
-    global version
-    oldversion=version
-    version="updating..."
-    os.system("sudo apt-get -y install gpac")
-    version=oldversion
+    #Instaliuoti MP4Box - jei nera
+    if not(os.path.exists('/usr/bin/MP4Box')):
+        global version
+        oldversion=version
+        version="updating..."
+        os.system("sudo apt-get update")
+        os.system("sudo apt-get -y install gpac")
+        version=oldversion
+    
+    #Paleisti autoupdate
     os.system("sudo /home/pi/autoupdate &")
     return "updated"
 

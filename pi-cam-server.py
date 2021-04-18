@@ -3,7 +3,7 @@ from datetime import datetime
 import os, socket, threading, glob, json, sys
 from cheroot.wsgi import Server as CherryPyWSGIServer
 
-version="1.4.2"
+version="1.4.3"
 
 host=socket.gethostname()
 status="stopped"
@@ -46,7 +46,7 @@ else:
 if not ("parameters" in config.keys()):
     config['parameters']="-t 1000"
 if not ("videoparameters" in config.keys()):
-    config['videoparameters']="-t 30000 -w 640 -h 480 -fps 25 -b 1200000 -p 0,0,640,480"
+    config['videoparameters']="-t 600000"
 saveconfig()
     
 
@@ -123,14 +123,11 @@ def startshooting():
     status="started"
     return "started"
 
+# Sustabdyti fotografavima arba video
 @app.get('/stopshooting')
 def stopshooting():
-    event.set()
-    return "stopped"
-
-@app.get('/stopvideo')
-def stopshooting():
-    os.system("sudo pkill raspivid")
+    os.system("sudo pkill raspivid") #video
+    event.set() #fotografavima
     return "stopped"
 
 # Failu siuntimas ir trynimas

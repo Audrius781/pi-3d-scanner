@@ -3,7 +3,7 @@ from datetime import datetime
 import os, socket, threading, glob, json, sys
 from cheroot.wsgi import Server as CherryPyWSGIServer
 
-version="1.4.4"
+version="1.4.5"
 
 host=socket.gethostname()
 status="stopped"
@@ -21,8 +21,11 @@ os.system("rm "+homefolder+"test.jpg")
 os.system("raspistill -t 1000 -o "+homefolder+"test.jpg &")
 cameraStatus="Error"
 
-# Gauti failu sarasa
+# Loginti kas vyksta
+def log(lg):
+    print (lg)
 
+# Gauti failu sarasa
 def listFiles():
     types = ('*.jpg', '*.h264','*.mp4') # the tuple of file types
     files_grabbed = []
@@ -61,11 +64,13 @@ def takePhoto(path):
 
 # Daryti daug nuotrauku iki kol negautas signalas sustabdyti
 def takeManyPhotos():
+    log ("takeManyPhotos starting")
     while not event.is_set():
         file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".jpg"
+        log ("takePhoto "+file)
         takePhoto(folder+file)
-        print (file)
     global status
+    log ("takeManyPhotos status=stopped")
     status="stopped"
 x = threading.Thread(target=takeManyPhotos, args=())
 app=Bottle()
@@ -99,33 +104,40 @@ def takevideo():
     if status=="stopped":
         file=host+"-"+datetime.now().strftime("%Y%m%d_%H_%M_%S")+".mp4"
         status="started_video"
+        log ("/takevideo status=started_video")
+        log ("/takevideo takeVideo video.h264")
         takeVideo(homefolder+"video.h264")
+        log ("/takevideo status=stopped")
         status="stopped"
+        log ("/takevideo MP4Box")
         os.system("MP4Box -add "+homefolder+"video.h264 "+homefolder+"video.mp4")
         os.system("mv "+homefolder+"video.mp4 "+folder+file)
         rt="video_taken"
+    log("/takevideo "+rt)
     return rt
 
 @app.get('/startshooting')
 def startshooting():
-    global event
-    event.clear()
-    global x
-    if not x.is_alive():
-        try:
-            x.start()
-            print ("reusing thread")
-        except RuntimeError: #occurs if thread is dead
-            x = threading.Thread(target=takeManyPhotos, args=()) #create new instance if thread is dead
-            x.start() #start thread
-            print ("new thread")
-    global status
-    status="started"
+    global event, status
+    if status=="stopped":
+        event.clear()
+        global x
+        if not x.is_alive():
+            try:
+                x.start()
+                log ("reusing thread")
+            except RuntimeError: #occurs if thread is dead
+                x = threading.Thread(target=takeManyPhotos, args=()) #create new instance if thread is dead
+                x.start() #start thread
+                log ("new thread")
+        status="started"
+        log ("/startshooting status=started")
     return "started"
 
 # Sustabdyti fotografavima arba video
 @app.get('/stopshooting')
 def stopshooting():
+    log ("/stopshooting")
     os.system("sudo pkill raspivid") #video
     event.set() #fotografavima
     return "stopped"
@@ -198,6 +210,7 @@ def reboot():
 def update():
     #Instaliuoti MP4Box - jei nera
     if not(os.path.exists('/usr/bin/MP4Box')):
+        log ("/update installing gpac")
         global version
         oldversion=version
         version="updating..."
@@ -206,6 +219,7 @@ def update():
         version=oldversion
     
     #Paleisti autoupdate
+    log ("/update autoupdate")
     os.system("sudo /home/pi/autoupdate &")
     return "updated"
 
